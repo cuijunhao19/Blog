@@ -27,8 +27,17 @@
 
         <!-- 4. 渲染博客列表（真实数据） -->
         <div class="blog-card" v-for="blog in blogs" :key="blog._id">
-            <!-- 博客标题 -->
-            <h2 class="blog-title">{{ blog.title }}</h2>
+
+            <!-- 博客列表渲染部分 -->
+
+            <!-- 修改：将标题改为 router-link，跳转到详情页 -->
+            <h2 class="blog-title">
+                <router-link :to="`/blog/${blog._id}`" class="title-link">
+                    {{ blog.title }}
+                </router-link>
+            </h2>
+
+
             <!-- 博客信息（作者 + 发布时间） -->
             <div class="blog-meta">
                 作者：{{ blog.author }} |

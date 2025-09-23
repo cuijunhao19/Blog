@@ -7,6 +7,8 @@ const BlogList = () => import("../views/BlogList.vue");
 // 新增：导入创建博客页面组件（懒加载）
 const CreateBlog = () => import("../views/CreateBlog.vue");
 
+const BlogDetail = () => import("../views/BlogDetail.vue");
+
 // 定义路由规则：“路径 → 组件”的映射
 const routes = [
   {
@@ -14,12 +16,19 @@ const routes = [
     name: "BlogList", // 路由名（可选，用于编程式导航）
     component: BlogList, // 对应页面组件（博客列表页）
   },
-  { 
-    path: '/create-blog', 
-    name: 'CreateBlog', 
+  {
+    path: "/create-blog",
+    name: "CreateBlog",
     component: CreateBlog,
-    meta: { title: '创建博客' }  // 可选：设置页面标题
-  }
+    meta: { title: "创建博客" }, // 可选：设置页面标题
+  },
+  // 新增：详情页路由（:id 是动态参数，接收博客 ID）
+  {
+    path: "/blog/:id",
+    name: "BlogDetail",
+    component: BlogDetail,
+    meta: { title: "博客详情" },
+  },
 ];
 
 // 创建路由实例
@@ -31,9 +40,9 @@ const router = createRouter({
 // 路由导航守卫，动态设置页面标题
 router.beforeEach((to, from, next) => {
   if (to.meta.title) {
-    document.title = to.meta.title + ' | 我的博客';
+    document.title = to.meta.title + " | 我的博客";
   } else {
-    document.title = '我的博客';
+    document.title = "我的博客";
   }
   next();
 });

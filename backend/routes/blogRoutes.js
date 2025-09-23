@@ -63,5 +63,44 @@ router.post("/", async (req, res) => {
   }
 });
 
+// 新增：GET /api/blogs/:id → 根据 ID 获取单篇博客
+router.get("/:id", async (req, res) => {
+  try {
+    // 1. 从 URL 参数中获取博客 ID（req.params.id）
+    const blogId = req.params.id;
+
+    // 2. 用 Blog.findById() 查询数据库（_id 是 MongoDB 自动生成的唯一标识）
+    const blog = await Blog.findById(blogId);
+
+    // 3. 处理“博客不存在”的情况（ID 格式正确但查不到数据）
+    if (!blog) {
+      return res.status(404).json({
+        success: false,
+        message: "未找到该博客（可能已被删除）",
+      });
+    }
+
+    // 4. 查询成功，返回博客数据
+    res.status(200).json({
+      success: true,
+      data: blog,
+    });
+  } catch (err) {
+    // 5. 处理错误（如 ID 格式错误，MongoDB 会抛 CastError）
+    if (err.name === "CastError") {
+      // ID 格式错误（如长度不对、包含非法字符）
+      return res.status(400).json({
+        success: false,
+        message: "博客 ID 格式错误",
+      });
+    }
+    // 其他服务器错误
+    res.status(500).json({
+      success: false,
+      message: "获取博客详情失败：" + err.message,
+    });
+  }
+});
+
 // 3. 导出路由实例，供入口文件挂载
 module.exports = router;
