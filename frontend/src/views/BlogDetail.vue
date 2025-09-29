@@ -21,21 +21,27 @@
             <div class="blog-meta">
                 <span>作者：{{ blog.author }}</span>
                 <span>发布时间：{{ formatDate(blog.publishTime) }}</span>
+                <!-- 新增：编辑按钮 -->
+                <button class="edit-btn" @click="$router.push(`/edit-blog/${blog._id}`)">
+                    编辑博客
+                </button>
             </div>
+
 
             <!-- 分割线 -->
-            <hr class="divider">
+            <div class="divider">
 
-            <!-- 完整内容 -->
-            <div class="blog-content">
-                <!-- 用 pre 标签保留换行和空格（如果内容有换行） -->
-                <pre>{{ blog.content }}</pre>
+                <!-- 完整内容 -->
+                <div class="blog-content">
+                    <!-- 用 pre 标签保留换行和空格（如果内容有换行） -->
+                    <pre>{{ blog.content }}</pre>
+                </div>
+
+                <!-- 返回按钮 -->
+                <button class="back-btn" @click="$router.push('/')">
+                    ← 返回博客列表
+                </button>
             </div>
-
-            <!-- 返回按钮 -->
-            <button class="back-btn" @click="$router.push('/')">
-                ← 返回博客列表
-            </button>
         </div>
     </div>
 </template>
@@ -123,11 +129,32 @@ onMounted(() => {
     line-height: 1.3;
 }
 
-/* 作者和时间样式 */
+
+/* 新增：编辑按钮样式 */
+.edit-btn {
+    margin-left: auto;
+    /* 靠右显示 */
+    padding: 5px 12px;
+    background-color: #48bb78;
+    /* 绿色 */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.edit-btn:hover {
+    background-color: #38a169;
+}
+
+/* 调整 .blog-meta 为 flex 布局，让按钮靠右 */
 .blog-meta {
     display: flex;
+    align-items: center;
+    /* 垂直居中 */
     gap: 20px;
-    /* 两个信息之间的间距 */
     color: #718096;
     font-size: 14px;
     margin-bottom: 20px;

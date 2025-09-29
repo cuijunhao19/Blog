@@ -4,10 +4,9 @@ import { createRouter, createWebHistory } from "vue-router";
 // 导入页面组件（后续创建博客列表页，先占位）
 // 注意：这里用“懒加载”（() => import(...)），优化性能（只在访问时加载组件）
 const BlogList = () => import("../views/BlogList.vue");
-// 新增：导入创建博客页面组件（懒加载）
 const CreateBlog = () => import("../views/CreateBlog.vue");
-
 const BlogDetail = () => import("../views/BlogDetail.vue");
+const EditBlog = () => import("../views/EditBlog.vue");
 
 // 定义路由规则：“路径 → 组件”的映射
 const routes = [
@@ -28,6 +27,13 @@ const routes = [
     name: "BlogDetail",
     component: BlogDetail,
     meta: { title: "博客详情" },
+  },
+  // 新增：编辑页路由（:id 是要编辑的博客 ID）
+  {
+    path: "/edit-blog/:id",
+    name: "EditBlog",
+    component: EditBlog,
+    meta: { title: "编辑博客" },
   },
 ];
 

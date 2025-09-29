@@ -2,10 +2,10 @@
 const express = require("express");
 const Blog = require("../models/Blog"); // 导入博客模型（用于操作数据库）
 
-// 1. 创建路由实例（类似“接口的容器”）
+// 一、创建路由实例（类似“接口的容器”）
 const router = express.Router();
 
-// 2. 定义接口：GET /api/blogs → 获取所有博客列表
+// 二、定义接口：GET /api/blogs → 获取所有博客列表
 router.get("/", async (req, res) => {
   try {
     // 从数据库中查询所有博客，按发布时间倒序（最新的博客排在前面）
@@ -26,7 +26,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// 新增：POST /api/blogs → 创建博客
+// 三、新增：POST /api/blogs → 创建博客
 router.post("/", async (req, res) => {
   try {
     // 1. 从请求体中获取前端提交的博客数据（req.body 由 express.json() 中间件解析）
@@ -63,7 +63,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-// 新增：GET /api/blogs/:id → 根据 ID 获取单篇博客
+// 四、新增：GET /api/blogs/:id → 根据 ID 获取单篇博客
 router.get("/:id", async (req, res) => {
   try {
     // 1. 从 URL 参数中获取博客 ID（req.params.id）
@@ -102,5 +102,56 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// 3. 导出路由实例，供入口文件挂载
+// 五、新增：PUT /api/blogs/:id → 更新博客内容
+router.put("/:id", async (req, res) => {
+  try {
+    // 1. 获取 URL 中的博客 ID 和请求体中的更新数据
+    const blogId = req.params.id;
+    const { title, author, content } = req.body;
+
+    // 2. 验证数据（标题和内容不能为空）
+    if (!title || !content) {
+      return res.status(400).json({
+        success: false,
+        message: "博客标题和内容不能为空",
+      });
+    }
+
+    // 3. 查找并更新博客（Mongoose 的 findByIdAndUpdate 方法）
+    // 选项 { new: true } 表示返回更新后的最新数据，而不是更新前的数据
+    const updatedBlog = await Blog.findByIdAndUpdate(
+      blogId,
+      { title, author: author || "匿名作者", content }, // 要更新的字段
+      { new: true, runValidators: true } // 启用 Schema 验证（确保更新后的数据符合规则）
+    );
+
+    // 4. 处理“博客不存在”的情况
+    if (!updatedBlog) {
+      return res.status(404).json({
+        success: false,
+        message: "未找到该博客（可能已被删除）",
+      });
+    }
+
+    // 5. 更新成功，返回最新数据
+    res.status(200).json({
+      success: true,
+      data: updatedBlog,
+    });
+  } catch (err) {
+    // 6. 错误处理（ID 格式错误或服务器异常）
+    if (err.name === "CastError") {
+      return res.status(400).json({
+        success: false,
+        message: "博客 ID 格式错误",
+      });
+    }
+    res.status(500).json({
+      success: false,
+      message: "更新博客失败：" + err.message,
+    });
+  }
+});
+
+// 导出路由实例，供入口文件挂载
 module.exports = router;
