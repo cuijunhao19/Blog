@@ -153,5 +153,41 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+// 新增：DELETE /api/blogs/:id → 删除博客
+router.delete('/:id', async (req, res) => {
+  try {
+    // 1. 获取 URL 中的博客 ID
+    const blogId = req.params.id;
+
+    // 2. 查找并删除博客（Mongoose 的 findByIdAndDelete 方法）
+    const deletedBlog = await Blog.findByIdAndDelete(blogId);
+
+    // 3. 处理“博客不存在”的情况
+    if (!deletedBlog) {
+      return res.status(404).json({
+        success: false,
+        message: '未找到该博客（可能已被删除）'
+      });
+    }
+
+    // 4. 删除成功，返回提示信息
+    res.status(200).json({
+      success: true,
+      message: '博客已成功删除'
+    });
+  } catch (err) {
+    // 5. 错误处理（ID 格式错误或服务器异常）
+    if (err.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: '博客 ID 格式错误'
+      });
+    }
+    res.status(500).json({
+      success: false,
+      message: '删除博客失败：' + err.message
+    });
+  }
+});
 // 导出路由实例，供入口文件挂载
 module.exports = router;
