@@ -1,6 +1,8 @@
 // routes/blogRoutes.js
 const express = require("express");
 const Blog = require("../models/Blog"); // 导入博客模型（用于操作数据库）
+const User = require("../models/User"); // 导入用户模型，用于关联作者
+const { verifyToken } = require("../utils/jwt"); // 导入权限中间件
 
 // 一、创建路由实例（类似“接口的容器”）
 const router = express.Router();
@@ -26,8 +28,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-// 三、新增：POST /api/blogs → 创建博客
-router.post("/", async (req, res) => {
+// 三、新增：POST /api/blogs → 创建博客 , 改动：需要权限
+router.post("/", verifyToken, async (req, res) => {
   try {
     // 1. 从请求体中获取前端提交的博客数据（req.body 由 express.json() 中间件解析）
     const { title, author, content } = req.body;
@@ -40,12 +42,19 @@ router.post("/", async (req, res) => {
       });
     }
 
+    // 关联当前登录用户（req.userId 是 verifyToken 中间件存入的用户 ID）
+    // 先查询用户信息，获取用户名（也可直接存 userId，后续查询时关联）
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "用户不存在" });
+    }
+
     // 3. 用 Blog 模型创建新博客（存入数据库）
     const newBlog = await Blog.create({
-      title: title,
-      author: author || "匿名作者", // 若前端没传作者，用默认值
-      content: content,
-      // publishTime 不用传，模型中已配置 default: Date.now
+      title,
+      content,
+      author: user.username, // 存入用户名
+      authorId: req.userId, // 新增：存入用户 ID（用于后续验证权限）
     });
 
     // 4. 返回成功响应（包含创建的博客数据）
@@ -102,8 +111,8 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// 五、新增：PUT /api/blogs/:id → 更新博客内容
-router.put("/:id", async (req, res) => {
+// 五、新增：PUT /api/blogs/:id → 更新博客内容, 添加权限，判断是不是自己的博客
+router.put("/:id", verifyToken, async (req, res) => {
   try {
     // 1. 获取 URL 中的博客 ID 和请求体中的更新数据
     const blogId = req.params.id;
@@ -117,35 +126,29 @@ router.put("/:id", async (req, res) => {
       });
     }
 
-    // 3. 查找并更新博客（Mongoose 的 findByIdAndUpdate 方法）
-    // 选项 { new: true } 表示返回更新后的最新数据，而不是更新前的数据
+    // 3. 先查询博客，验证是否存在 + 是否是当前用户的博客
+    const blog = await Blog.findById(blogId);
+    if (!blog) {
+      return res.status(404).json({ success: false, message: "博客不存在" });
+    }
+
+    // 验证权限：只有博客的作者（authorId 等于当前登录用户 ID）才能编辑
+    if (blog.authorId.toString() !== req.userId) {
+      return res
+        .status(403)
+        .json({ success: false, message: "没有权限编辑此博客" });
+    }
+
+    // 更新博客
     const updatedBlog = await Blog.findByIdAndUpdate(
       blogId,
-      { title, author: author || "匿名作者", content }, // 要更新的字段
-      { new: true, runValidators: true } // 启用 Schema 验证（确保更新后的数据符合规则）
+      { title, content },
+      { new: true, runValidators: true }
     );
 
-    // 4. 处理“博客不存在”的情况
-    if (!updatedBlog) {
-      return res.status(404).json({
-        success: false,
-        message: "未找到该博客（可能已被删除）",
-      });
-    }
-
-    // 5. 更新成功，返回最新数据
-    res.status(200).json({
-      success: true,
-      data: updatedBlog,
-    });
+    res.status(200).json({ success: true, data: updatedBlog });
   } catch (err) {
-    // 6. 错误处理（ID 格式错误或服务器异常）
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        success: false,
-        message: "博客 ID 格式错误",
-      });
-    }
+    // 4. 错误处理（ID 格式错误或服务器异常）
     res.status(500).json({
       success: false,
       message: "更新博客失败：" + err.message,
@@ -153,39 +156,30 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// 新增：DELETE /api/blogs/:id → 删除博客
-router.delete('/:id', async (req, res) => {
+// 新增：DELETE /api/blogs/:id → 删除博客, 添加权限
+router.delete("/:id", verifyToken, async (req, res) => {
   try {
     // 1. 获取 URL 中的博客 ID
     const blogId = req.params.id;
 
-    // 2. 查找并删除博客（Mongoose 的 findByIdAndDelete 方法）
-    const deletedBlog = await Blog.findByIdAndDelete(blogId);
-
-    // 3. 处理“博客不存在”的情况
-    if (!deletedBlog) {
-      return res.status(404).json({
-        success: false,
-        message: '未找到该博客（可能已被删除）'
-      });
+    // 2.验证博客是否存在 + 是否是自己的博客
+    const blog = await Blog.findById(blogId);
+    if (!blog) {
+      return res.status(404).json({ success: false, message: "博客不存在" });
     }
 
-    // 4. 删除成功，返回提示信息
-    res.status(200).json({
-      success: true,
-      message: '博客已成功删除'
-    });
+    if (blog.authorId.toString() !== req.userId) {
+      return res.status(403).json({ success: false, message: "没有权限删除此博客" });
+    }
+
+    // 3.删除博客
+    await Blog.findByIdAndDelete(blogId);
+    res.status(200).json({ success: true, message: "博客已删除" });
   } catch (err) {
-    // 5. 错误处理（ID 格式错误或服务器异常）
-    if (err.name === 'CastError') {
-      return res.status(400).json({
-        success: false,
-        message: '博客 ID 格式错误'
-      });
-    }
+    // 4. 错误处理（ID 格式错误或服务器异常）
     res.status(500).json({
       success: false,
-      message: '删除博客失败：' + err.message
+      message: "删除博客失败：" + err.message,
     });
   }
 });

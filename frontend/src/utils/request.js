@@ -13,8 +13,12 @@ const request = axios.create({
 // 2. 请求拦截器（发送请求前做一些处理，比如加 Token，后续登录用）
 request.interceptors.request.use(
   (config) => {
-    // 这里暂时不需要加 Token（还没做登录），后续加登录功能时再补充
-    return config; // 必须返回 config，否则请求会卡住
+    // 从 localStorage 获取 Token，添加到请求头
+    const token = localStorage.getItem("blog_token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
   },
   (error) => {
     // 请求发送失败时的处理（比如网络错误）
@@ -33,20 +37,19 @@ request.interceptors.response.use(
     // 后端响应失败的处理（比如接口不存在、服务器错误）
     let errorMsg = "请求失败，请稍后重试";
     if (error.response) {
-      // 根据后端返回的状态码，自定义错误提示
-      switch (error.response.status) {
-        case 404:
-          errorMsg = "接口不存在（404）";
-          break;
-        case 500:
-          errorMsg = "服务器内部错误（500）";
-          break;
-        default:
-          errorMsg = error.response.data?.message || errorMsg;
+      // Token 过期或无效：跳转到登录页
+      if (error.response.status === 401) {
+        localStorage.removeItem("blog_token"); // 清除无效 Token
+        localStorage.removeItem("blog_username");
+        // 跳登录页，并记录当前路径
+        window.location.href = `/login?redirect=${window.location.pathname}`;
+        errorMsg = "登录已过期，请重新登录";
+      } else {
+        errorMsg = error.response.data?.message || errorMsg;
       }
     }
     console.error("请求响应失败：", errorMsg);
-    return Promise.reject(errorMsg); // 把错误信息抛出去，组件中显示
+    return Promise.reject(errorMsg);
   }
 );
 

@@ -17,6 +17,12 @@ const blogSchema = new mongoose.Schema({
     required: [true, "作者名不能为空"],
     default: "匿名作者", // 默认值：没填作者时显示“匿名作者”
   },
+  authorId: {
+    // 新增：关联用户 ID（用于验证权限）
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User", // 关联 User 模型
+    required: true,
+  },
   publishTime: {
     type: Date, // 字段类型：日期（发布时间）
     default: Date.now, // 默认值：当前时间（创建博客时自动填充）
