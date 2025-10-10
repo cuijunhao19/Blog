@@ -10,20 +10,37 @@ const router = express.Router();
 // 二、定义接口：GET /api/blogs → 获取所有博客列表
 router.get("/", async (req, res) => {
   try {
-    // 从数据库中查询所有博客，按发布时间倒序（最新的博客排在前面）
-    const blogs = await Blog.find().sort({ publishTime: -1 });
+    // 1. 接收前端传的分页参数（默认值：第1页，每页10条）
+    const page = parseInt(req.query.page) || 1; // 页码，默认1
+    const limit = parseInt(req.query.limit) || 10; // 每页数量，默认10
 
-    // 给前端返回成功响应：状态码 200，数据是 blogs 数组
+    // 2. 计算“跳过的条数”（比如第2页，每页10条：跳过前10条，取11-20条）
+    const skip = (page - 1) * limit;
+
+    // 3. 分页查询：skip(跳过条数) + limit(取多少条) + sort(排序)
+    const blogs = await Blog.find()
+      .sort({ publishTime: -1 }) // 按发布时间倒序（最新在前）
+      .skip(skip)
+      .limit(limit);
+
+    // 4. 查询总条数（用于计算总页数）
+    const total = await Blog.countDocuments(); // countDocuments() 统计集合中总文档数
+
+    // 5. 返回分页数据（包含当前页数据、总页数、总条数等）
     res.status(200).json({
       success: true,
-      count: blogs.length, // 博客总数
-      data: blogs, // 博客列表数据
+      data: blogs,
+      pagination: {
+        currentPage: page, // 当前页码
+        pageSize: limit, // 每页数量
+        totalItems: total, // 总博客数
+        totalPages: Math.ceil(total / limit), // 总页数（向上取整，比如11条→2页）
+      },
     });
   } catch (err) {
-    // 出错时返回错误响应：状态码 500（服务器内部错误）
     res.status(500).json({
       success: false,
-      message: "服务器错误，获取博客列表失败",
+      message: "获取博客列表失败：" + err.message,
     });
   }
 });
@@ -169,7 +186,9 @@ router.delete("/:id", verifyToken, async (req, res) => {
     }
 
     if (blog.authorId.toString() !== req.userId) {
-      return res.status(403).json({ success: false, message: "没有权限删除此博客" });
+      return res
+        .status(403)
+        .json({ success: false, message: "没有权限删除此博客" });
     }
 
     // 3.删除博客
