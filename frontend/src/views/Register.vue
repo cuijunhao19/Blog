@@ -70,27 +70,32 @@ const handleRegister = async () => {
 };
 </script>
 
+<!-- 只展示修改后的style部分 -->
 <style scoped>
 .auth-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    background-color: #f5f7fa;
+    min-height: calc(100vh - 70px);
+    padding: 40px 20px;
 }
 
 .auth-card {
-    width: 400px;
-    padding: 30px;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 400px;
+    background: var(--bg-white);
+    border-radius: var(--border-radius);
+    padding: 40px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
 }
 
 .auth-card h2 {
     text-align: center;
-    margin-bottom: 25px;
-    color: #2d3748;
+    margin-bottom: 30px;
+    color: var(--text-dark);
+    font-size: 24px;
+    font-weight: 700;
 }
 
 .form-group {
@@ -100,48 +105,67 @@ const handleRegister = async () => {
 .form-group label {
     display: block;
     margin-bottom: 8px;
-    color: #4a5568;
+    color: var(--text-dark);
+    font-weight: 500;
 }
 
 .form-group input {
     width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
     font-size: 16px;
+    transition: var(--transition);
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .error-tip {
-    margin: 5px 0 0;
-    color: #e53e3e;
+    margin-top: 8px;
+    color: var(--danger-color);
     font-size: 14px;
 }
 
 .auth-btn {
     width: 100%;
     padding: 12px;
-    background-color: #4299e1;
+    background-color: var(--primary-color);
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: var(--border-radius);
     font-size: 16px;
+    font-weight: 500;
     cursor: pointer;
-    margin-bottom: 15px;
+    transition: var(--transition);
+    margin-bottom: 20px;
+}
+
+.auth-btn:hover:not(:disabled) {
+    background-color: var(--primary-hover);
 }
 
 .auth-btn:disabled {
-    background-color: #90caf9;
+    background-color: var(--secondary-color);
     cursor: not-allowed;
 }
 
 .auth-link {
     text-align: center;
-    color: #4a5568;
+    color: var(--text-light);
     font-size: 14px;
 }
 
 .auth-link a {
-    color: #4299e1;
+    color: var(--primary-color);
     text-decoration: none;
+    font-weight: 500;
+}
+
+.auth-link a:hover {
+    text-decoration: underline;
 }
 </style>

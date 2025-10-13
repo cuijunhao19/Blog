@@ -45,11 +45,34 @@ router.get("/", async (req, res) => {
   }
 });
 
+// 新增：获取当前登录用户的所有博客（需验证Token）
+router.get("/my-blogs", verifyToken, async (req, res) => {
+  try {
+    // 1. 从Token中获取当前用户ID（req.userId由verifyToken中间件提供）
+    const userId = req.userId;
+
+    // 2. 按authorId查询博客，按发布时间倒序
+    const myBlogs = await Blog.find({ authorId: userId }).sort({
+      publishTime: -1,
+    }); // 最新发布的在前
+
+    res.status(200).json({
+      success: true,
+      data: myBlogs,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "获取我的博客失败：" + err.message,
+    });
+  }
+});
+
 // 三、新增：POST /api/blogs → 创建博客 , 改动：需要权限
 router.post("/", verifyToken, async (req, res) => {
   try {
     // 1. 从请求体中获取前端提交的博客数据（req.body 由 express.json() 中间件解析）
-    const { title, author, content } = req.body;
+    const { title, content } = req.body;
 
     // 2. 验证数据（虽然前端也会验证，但后端必须再验证一次，防止恶意提交）
     if (!title || !content) {
@@ -202,5 +225,6 @@ router.delete("/:id", verifyToken, async (req, res) => {
     });
   }
 });
+
 // 导出路由实例，供入口文件挂载
 module.exports = router;

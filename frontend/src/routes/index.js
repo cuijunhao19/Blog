@@ -9,6 +9,7 @@ const BlogDetail = () => import("../views/BlogDetail.vue");
 const EditBlog = () => import("../views/EditBlog.vue");
 const Login = () => import("../views/Login.vue");
 const Register = () => import("../views/Register.vue");
+const MyBlogs = () => import('../views/MyBlogs.vue');
 
 // 检查是否登录的工具函数（从 localStorage 获取 Token）
 const isLoggedIn = () => {
@@ -53,6 +54,12 @@ const routes = [
     name:"Register",
     component:Register,
     meta:{title:"注册"}
+  },
+  {
+    path:"/my-blogs",
+    name:"MyBlogs",
+    component:MyBlogs,
+    meta:{title:"我的博客"}
   }
 ];
 

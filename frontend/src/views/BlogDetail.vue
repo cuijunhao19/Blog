@@ -42,8 +42,9 @@
                 </div>
 
                 <!-- 返回按钮 -->
-                <button class="back-btn" @click="$router.push('/')">
-                    ← 返回博客列表
+                <button class="back-btn" @click="handleBack">
+                    <!-- 根据 from 参数显示不同文本 -->
+                    {{ from === 'myblogs' ? '← 返回我的博客' : '← 返回博客列表' }}
                 </button>
             </div>
         </div>
@@ -76,7 +77,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';  // route 用于获取参数，router 用于跳转
 
 // 获取路由参数和路由实例
-const route = useRoute();  // 用于获取 URL 中的 id 参数
+const route = useRoute();  // 用于获取 URL 中的 id 参数 和from参数
 const router = useRouter();
 
 // 响应式数据
@@ -85,6 +86,7 @@ const loading = ref(true); // 加载状态（初始为 true，因为需要立即
 const error = ref('');     // 错误信息
 const showDeleteConfirm = ref(false);  // 控制删除确认弹窗显示/隐藏
 const deleting = ref(false);           // 删除操作的加载状态
+const from = ref(route.query.from || 'list');  // 获取 from 参数，决定返回按钮跳转到哪里（列表页/我的博客页）默认值为 'list'
 
 // 日期格式化函数（复用列表页的逻辑，后续可抽成工具函数）
 const formatDate = (isoDate) => {
@@ -136,199 +138,119 @@ const handleDelete = async () => {
     }
 };
 
-
+// 新增：处理返回按钮点击，根据 from 参数决定跳转路径
+const handleBack = () => {
+    // 根据 from 参数决定跳转路径
+    if (from.value === 'myblogs') {
+        router.push('/my-blogs');
+    } else {
+        router.push('/');
+    }
+};
 // 页面加载时调用（首次进入详情页时获取数据）
 onMounted(() => {
     getBlogDetail();
 });
 </script>
 
+
 <style scoped>
-/* 容器样式 */
 .blog-detail-container {
-    width: 800px;
-    margin: 50px auto;
-    padding: 0 20px;
+    width: 100%;
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 30px 20px;
 }
 
-/* 加载中样式 */
-.loading {
-    text-align: center;
-    padding: 100px 0;
-    color: #666;
-    font-size: 18px;
-}
-
-/* 错误提示样式 */
+/* 加载和错误状态 */
+.loading,
 .error {
     text-align: center;
-    padding: 100px 0;
-    color: #e53935;
+    padding: 60px 20px;
     font-size: 18px;
 }
 
-/* 标题样式 */
+.error {
+    color: var(--danger-color);
+}
+
+/* 博客内容区域 */
 .blog-title {
-    color: #2d3748;
-    font-size: 28px;
-    margin-bottom: 15px;
+    color: var(--text-dark);
+    font-size: 32px;
+    font-weight: 700;
     line-height: 1.3;
-}
-
-
-/* 新增：编辑按钮样式 */
-.edit-btn {
-    margin-left: auto;
-    /* 靠右显示 */
-    padding: 5px 12px;
-    background-color: #48bb78;
-    /* 绿色 */
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.edit-btn:hover {
-    background-color: #38a169;
-}
-
-/* 调整 .blog-meta 为 flex 布局，让按钮靠右 */
-.blog-meta {
-    display: flex;
-    align-items: center;
-    /* 垂直居中 */
-    gap: 20px;
-    color: #718096;
-    font-size: 14px;
     margin-bottom: 20px;
 }
 
-/* 分割线样式 */
-.divider {
-    border: none;
-    border-top: 1px solid #e2e8f0;
-    margin: 20px 0 30px;
+.blog-meta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    color: var(--text-light);
+    font-size: 14px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
 }
 
-/* 内容样式 */
 .blog-content {
-    color: #4a5568;
+    color: var(--text-normal);
     line-height: 1.8;
     font-size: 16px;
-    white-space: pre-wrap;
-    /* 保留换行符和空格 */
     margin-bottom: 40px;
+    white-space: pre-wrap;
 }
 
-/* 返回按钮样式 */
+/* 按钮组 */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
 .back-btn {
-    padding: 10px 20px;
-    background-color: #f7fafc;
-    color: #2d3748;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    margin-top: 20px;
 }
 
-.back-btn:hover {
-    background-color: #edf2f7;
-}
-
-/* 新增：删除按钮样式 */
-.delete-btn {
-    margin-left: 10px;
-    padding: 5px 12px;
-    background-color: #e53e3e;
-    /* 红色 */
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.delete-btn:hover {
-    background-color: #c53030;
-}
-
-/* 新增：弹窗遮罩层样式（半透明黑色背景） */
+/* 模态框 */
 .modal-backdrop {
     position: fixed;
-    /* 固定在视口 */
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.5);
-    /* 半透明黑色 */
     display: flex;
     justify-content: center;
-    /* 水平居中 */
     align-items: center;
-    /* 垂直居中 */
-    z-index: 1000;
-    /* 确保在页面内容上方 */
+    z-index: 2000;
 }
 
-/* 新增：弹窗样式 */
 .modal {
-    width: 400px;
-    background-color: white;
-    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    background-color: var(--bg-white);
+    border-radius: var(--border-radius);
     padding: 25px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-md);
 }
 
-/* 弹窗标题 */
 .modal-title {
-    margin: 0 0 15px;
-    color: #2d3748;
+    margin-bottom: 15px;
+    color: var(--text-dark);
     font-size: 18px;
 }
 
-/* 弹窗内容 */
 .modal-content {
-    margin: 0 0 20px;
-    color: #4a5568;
+    margin-bottom: 20px;
+    color: var(--text-normal);
     line-height: 1.5;
 }
 
-/* 弹窗按钮组 */
 .modal-btns {
     display: flex;
     justify-content: flex-end;
-    /* 按钮靠右 */
     gap: 10px;
-}
-
-/* 取消按钮 */
-.modal-cancel {
-    padding: 8px 16px;
-    background-color: #f7fafc;
-    color: #2d3748;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-/* 确认删除按钮 */
-.modal-confirm {
-    padding: 8px 16px;
-    background-color: #e53e3e;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.modal-confirm:disabled {
-    background-color: #ed64a6;
-    cursor: not-allowed;
 }
 </style>

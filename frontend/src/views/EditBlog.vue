@@ -25,11 +25,11 @@
                 <p class="error-tip" v-if="errors.title">{{ errors.title }}</p>
             </div>
 
-            <!-- 作者输入框 -->
+            <!-- 作者输入框
             <div class="form-group">
                 <label for="author">作者</label>
                 <input type="text" id="author" v-model.trim="form.author" placeholder="请输入作者名（默认：匿名作者）" maxlength="20">
-            </div>
+            </div> -->
 
             <!-- 内容输入框 -->
             <div class="form-group">
@@ -142,39 +142,26 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 复用创建页的样式，只需微调 */
 .create-blog-container {
-    width: 800px;
-    margin: 50px auto;
-    padding: 0 20px;
+    width: 100%;
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 30px 20px;
 }
 
-.loading {
-    text-align: center;
-    padding: 100px 0;
-    color: #666;
-    font-size: 18px;
+.create-blog-container h1 {
+    color: var(--text-dark);
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 30px;
 }
 
-.error {
-    text-align: center;
-    padding: 100px 0;
-    color: #e53935;
-    font-size: 18px;
-}
-
-.back-btn {
-    margin-top: 20px;
-    padding: 10px 20px;
-    background-color: #f7fafc;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-/* 以下样式和 CreateBlog.vue 一致，可考虑后续抽成全局样式 */
 .blog-form {
-    margin-top: 30px;
+    background: var(--bg-white);
+    border-radius: var(--border-radius);
+    padding: 30px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
 }
 
 .form-group {
@@ -184,71 +171,78 @@ onMounted(() => {
 .form-group label {
     display: block;
     margin-bottom: 8px;
-    color: #2d3748;
-    font-size: 16px;
+    color: var(--text-dark);
+    font-weight: 500;
 }
 
 .required {
-    color: #e53935;
+    color: var(--danger-color);
 }
 
 .form-group input,
 .form-group textarea {
     width: 100%;
     padding: 12px 15px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
     font-size: 16px;
-    transition: border-color 0.3s ease;
+    transition: var(--transition);
+    font-family: inherit;
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #4299e1;
-    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .error-tip {
-    margin: 8px 0 0;
-    color: #e53935;
+    margin-top: 8px;
+    color: var(--danger-color);
     font-size: 14px;
 }
 
 .form-btn {
     display: flex;
     gap: 15px;
-    margin-top: 40px;
+    margin-top: 30px;
 }
 
 .submit-btn {
-    padding: 12px 30px;
-    background-color: #4299e1;
+    flex: 1;
+    padding: 12px;
+    background-color: var(--primary-color);
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     font-size: 16px;
+    font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: var(--transition);
+}
+
+.submit-btn:hover:not(:disabled) {
+    background-color: var(--primary-hover);
 }
 
 .submit-btn:disabled {
-    background-color: #90caf9;
+    background-color: var(--secondary-color);
     cursor: not-allowed;
 }
 
 .cancel-btn {
-    padding: 12px 30px;
-    background-color: #f7fafc;
-    color: #2d3748;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    padding: 12px 20px;
+    background-color: var(--bg-white);
+    color: var(--text-normal);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
     font-size: 16px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: var(--transition);
 }
 
 .cancel-btn:hover {
-    background-color: #edf2f7;
+    background-color: var(--bg-light);
 }
 </style>

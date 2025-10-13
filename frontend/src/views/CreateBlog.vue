@@ -13,10 +13,10 @@
             </div>
 
             <!-- 2. 作者输入框 -->
-            <div class="form-group">
+            <!-- <div class="form-group">
                 <label for="author">作者</label>
                 <input type="text" id="author" v-model.trim="form.author" placeholder="请输入作者名（默认：匿名作者）" maxlength="20">
-            </div>
+            </div> -->
 
             <!-- 3. 内容输入框（多行文本） -->
             <div class="form-group">
@@ -52,7 +52,6 @@ const router = useRouter();
 // 3. 定义响应式数据：表单数据、加载状态、错误提示
 const form = ref({
     title: '',    // 博客标题
-    author: '',   // 作者
     content: ''   // 博客内容
 });
 const loading = ref(false);  // 提交按钮加载状态
@@ -92,7 +91,6 @@ const handleSubmit = async () => {
         // 调用后端 POST /api/blogs 接口，传递表单数据
         await request.post('/api/blogs', {
             title: form.value.title,
-            author: form.value.author,  // 为空时后端会用默认值
             content: form.value.content
         });
 
@@ -109,104 +107,109 @@ const handleSubmit = async () => {
 };
 </script>
 
+
 <style scoped>
-/* 容器样式 */
 .create-blog-container {
-    width: 800px;
-    margin: 50px auto;
-    padding: 0 20px;
+    width: 100%;
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 30px 20px;
 }
 
-/* 表单样式 */
+.create-blog-container h1 {
+    color: var(--text-dark);
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 30px;
+}
+
 .blog-form {
-    margin-top: 30px;
+    background: var(--bg-white);
+    border-radius: var(--border-radius);
+    padding: 30px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
 }
 
-/* 表单组样式 */
 .form-group {
     margin-bottom: 25px;
 }
 
-/* 标签样式 */
 .form-group label {
     display: block;
     margin-bottom: 8px;
-    color: #2d3748;
-    font-size: 16px;
+    color: var(--text-dark);
+    font-weight: 500;
 }
 
-/* 必填项红色标记 */
 .required {
-    color: #e53935;
+    color: var(--danger-color);
 }
 
-/* 输入框/文本域样式 */
 .form-group input,
 .form-group textarea {
     width: 100%;
     padding: 12px 15px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
     font-size: 16px;
-    transition: border-color 0.3s ease;
+    transition: var(--transition);
+    font-family: inherit;
 }
 
-/* 输入框聚焦样式 */
 .form-group input:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #4299e1;
-    /* 蓝色边框 */
-    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-/* 错误提示样式 */
 .error-tip {
-    margin: 8px 0 0;
-    color: #e53935;
+    margin-top: 8px;
+    color: var(--danger-color);
     font-size: 14px;
 }
 
-/* 按钮组样式 */
 .form-btn {
     display: flex;
     gap: 15px;
-    /* 按钮之间的间距 */
-    margin-top: 40px;
+    margin-top: 30px;
 }
 
-/* 提交按钮样式 */
 .submit-btn {
-    padding: 12px 30px;
-    background-color: #4299e1;
+    flex: 1;
+    padding: 12px;
+    background-color: var(--primary-color);
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     font-size: 16px;
+    font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: var(--transition);
 }
 
-/* 提交按钮加载状态 */
+.submit-btn:hover:not(:disabled) {
+    background-color: var(--primary-hover);
+}
+
 .submit-btn:disabled {
-    background-color: #90caf9;
+    background-color: var(--secondary-color);
     cursor: not-allowed;
 }
 
-/* 取消按钮样式 */
 .cancel-btn {
-    padding: 12px 30px;
-    background-color: #f7fafc;
-    color: #2d3748;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    padding: 12px 20px;
+    background-color: var(--bg-white);
+    color: var(--text-normal);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
     font-size: 16px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: var(--transition);
 }
 
-/* 取消按钮 hover 样式 */
 .cancel-btn:hover {
-    background-color: #edf2f7;
+    background-color: var(--bg-light);
 }
 </style>
