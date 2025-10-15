@@ -13,7 +13,8 @@
                     <input type="password" v-model="form.password" placeholder="请输入密码" required>
                     <p class="error-tip" v-if="loginError">{{ loginError }}</p>
                 </div>
-                <button type="submit" class="auth-btn" :disabled="loading">
+                <!-- 更新认证按钮 -->
+                <button type="submit" class="btn btn-primary" :disabled="loading">
                     <span v-if="loading">登录中...</span>
                     <span v-else>登录</span>
                 </button>

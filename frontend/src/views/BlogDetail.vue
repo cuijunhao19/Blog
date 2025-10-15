@@ -22,11 +22,10 @@
                 <span>作者：{{ blog.author }}</span>
                 <span>发布时间：{{ formatDate(blog.publishTime) }}</span>
                 <!-- 新增：编辑按钮 -->
-                <button class="edit-btn" @click="$router.push(`/edit-blog/${blog._id}`)">
+                <button class="btn btn-edit" @click="$router.push(`/edit-blog/${blog._id}`)">
                     编辑博客
                 </button>
-                <!-- 新增：删除按钮 -->
-                <button class="delete-btn" @click="showDeleteConfirm = true">
+                <button class="btn btn-danger" @click="showDeleteConfirm = true">
                     删除博客
                 </button>
             </div>
@@ -37,8 +36,7 @@
 
                 <!-- 完整内容 -->
                 <div class="blog-content">
-                    <!-- 用 pre 标签保留换行和空格（如果内容有换行） -->
-                    <pre>{{ blog.content }}</pre>
+                    <div class="blog-content" v-html="blog.content"></div>
                 </div>
 
                 <!-- 返回按钮 -->

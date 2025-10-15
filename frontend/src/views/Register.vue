@@ -14,7 +14,8 @@
                     <input type="password" v-model="form.password" placeholder="请输入密码（不少于6字符）" required>
                     <p class="error-tip" v-if="errors.password">{{ errors.password }}</p>
                 </div>
-                <button type="submit" class="auth-btn" :disabled="loading">
+                <!-- 更新认证按钮 -->
+                <button type="submit" class="btn btn-primary" :disabled="loading">
                     <span v-if="loading">注册中...</span>
                     <span v-else>注册</span>
                 </button>

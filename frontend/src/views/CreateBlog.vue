@@ -18,21 +18,22 @@
                 <input type="text" id="author" v-model.trim="form.author" placeholder="请输入作者名（默认：匿名作者）" maxlength="20">
             </div> -->
 
-            <!-- 3. 内容输入框（多行文本） -->
+            <!-- 替换：富文本编辑器（替换原 textarea） -->
             <div class="form-group">
-                <label for="content">博客内容 <span class="required">*</span></label>
-                <textarea id="content" v-model="form.content" placeholder="请输入博客内容（不能为空）" rows="8" required></textarea>
-                <p class="error-tip" v-if="errors.content">{{ errors.content }}</p>
+                <label>博客内容 <span style="color: var(--danger);">*</span></label>
+                <!-- 使用重构后的富文本组件，v-model双向绑定 -->
+                <RichTextEditor v-model="form.content" :disabled="loading" editorId="create-blog-editor" />
             </div>
 
             <!-- 4. 提交按钮（加载状态切换） -->
             <div class="form-btn">
-                <button type="submit" class="submit-btn" :disabled="loading">
+                <!-- 更新提交按钮 -->
+                <button type="submit" class="btn btn-primary" :disabled="loading">
                     <span v-if="loading">提交中...</span>
                     <span v-else>发布博客</span>
                 </button>
                 <!-- 取消按钮：跳转回列表页 -->
-                <button type="button" class="cancel-btn" @click="$router.push('/')">
+                <button type="button" class="btn btn-outline" @click="$router.push('/')">
                     取消
                 </button>
             </div>
@@ -45,6 +46,8 @@
 import request from '../utils/request';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';  // 用于跳转页面
+// 导入富文本组件
+import RichTextEditor from '../components/RichTextEditor.vue';
 
 // 2. 初始化路由实例（跳转用）
 const router = useRouter();

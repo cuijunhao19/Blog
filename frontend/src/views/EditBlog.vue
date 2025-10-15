@@ -32,10 +32,11 @@
             </div> -->
 
             <!-- 内容输入框 -->
+            <!-- 富文本编辑器（加载已有内容） -->
             <div class="form-group">
-                <label for="content">博客内容 <span class="required">*</span></label>
-                <textarea id="content" v-model="form.content" placeholder="请输入博客内容（不能为空）" rows="8" required></textarea>
-                <p class="error-tip" v-if="errors.content">{{ errors.content }}</p>
+                <label>博客内容 <span style="color: var(--danger);">*</span></label>
+                <!-- 使用重构后的富文本组件，v-model双向绑定 -->
+                <RichTextEditor v-model="form.content" :disabled="loading" editorId="create-blog-editor" />
             </div>
 
             <!-- 提交按钮组 -->
@@ -57,6 +58,7 @@
 import request from '../utils/request';
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import RichTextEditor from '../components/RichTextEditor.vue';
 
 // 2. 获取路由参数和路由实例
 const route = useRoute();
@@ -64,7 +66,7 @@ const router = useRouter();
 const blogId = route.params.id;  // 从 URL 中获取要编辑的博客 ID
 
 // 3. 响应式数据
-const form = ref({ title: '', author: '', content: '' });  // 表单数据（预填原博客数据）
+const form = ref({ title: '', content: '' });  // 表单数据（预填原博客数据）
 const loadingData = ref(true);  // 加载原博客数据的状态
 const loadError = ref('');      // 加载原数据的错误信息
 const submitting = ref(false);  // 提交更新的状态
@@ -83,7 +85,6 @@ const getBlogData = async () => {
         // 填充表单（预填原数据）
         form.value = {
             title: blog.title,
-            author: blog.author,
             content: blog.content
         };
     } catch (err) {

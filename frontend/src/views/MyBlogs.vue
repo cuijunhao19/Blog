@@ -20,7 +20,9 @@
         <!-- 页面标题和返回按钮 -->
         <div class="top-bar">
             <h1>我的博客</h1>
-            <button class="back-btn" @click="$router.push('/')">返回博客列表</button>
+            <button class="btn btn-outline" @click="$router.push('/')">
+                返回博客列表
+            </button>
         </div>
 
         <!-- 加载状态 -->
@@ -37,7 +39,7 @@
         </div>
 
         <!-- 我的博客列表（和BlogList渲染逻辑一致） -->
-        <div class="blog-card" v-for="blog in blogs" :key="blog._id" v-else>
+        <div class="blog-card gradient-card hover-lift animate-fadeInUp" v-for="blog in blogs" :key="blog._id">
             <h2 class="blog-title">
                 <router-link :to="`/blog/${blog._id}?from=myblogs`" class="title-link">
                     {{ blog.title }}

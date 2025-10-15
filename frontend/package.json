@@ -9,7 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tinymce/tinymce-vue": "^5.1.0",
     "axios": "^1.12.2",
+    "tinymce": "^5.10.7",
     "vue": "^3.5.18",
     "vue-router": "^4.5.1"
   },

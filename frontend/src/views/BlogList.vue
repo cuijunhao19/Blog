@@ -25,7 +25,7 @@
         <!-- 创建博客按钮 -->
         <div class="top-bar">
             <h1>博客列表</h1>
-            <button class="create-btn" @click="$router.push('/create-blog')" v-if="isLoggedIn">
+            <button class="btn btn-primary" @click="$router.push('/create-blog')" v-if="isLoggedIn">
                 + 创建新博客
             </button>
         </div>
@@ -47,7 +47,7 @@
         </div>
 
         <!-- 4. 渲染博客列表（真实数据） -->
-        <div class="blog-card" v-for="blog in blogs" :key="blog._id">
+        <div class="blog-card gradient-card hover-lift animate-fadeInUp" v-for="blog in blogs" :key="blog._id">
 
             <!-- 博客列表渲染部分 -->
 
@@ -131,7 +131,7 @@ const username = computed(() => {
 const router = useRouter();
 
 // 4. 获取博客列表的核心方法
-const getBlogList = async (page = 1, limit = 2) => {
+const getBlogList = async (page = 1, limit = 3) => {
     try {
         loading.value = true;
         error.value = '';
