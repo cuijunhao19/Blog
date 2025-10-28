@@ -64,13 +64,15 @@
                 作者：{{ blog.author }} |
                 发布时间：{{ formatDate(blog.publishTime) }}
             </div>
-            <!-- 博客内容（截取前100字，避免内容过长） -->
+            <!-- 替换：用处理后的纯文本摘要 -->
+            <p class="blog-summary">{{ getSummary(htmlToText(blog.content)) }}</p>
+            <!-- 博客内容（截取前100字，避免内容过长）
             <div class="blog-content">
                 {{ blog.content.length > 100
                     ? blog.content.slice(0, 100) + '...'
                     : blog.content
                 }}
-            </div>
+            </div> -->
         </div>
 
         <!-- 新增：分页组件（只有有数据时显示） -->
@@ -103,6 +105,7 @@
 
 
 <script setup>
+import { htmlToText, getSummary } from '../utils/format'; // 导入工具函数
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import request from '../utils/request'; // 确保该文件存在且正确
@@ -364,5 +367,11 @@ onMounted(() => {
     margin-left: 20px;
     color: var(--text-light);
     font-size: 14px;
+}
+
+.blog-summary {
+    color: var(--text-light);
+    margin: 10px 0;
+    line-height: 1.6;
 }
 </style>
