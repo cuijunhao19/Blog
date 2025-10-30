@@ -4,6 +4,7 @@
 
 <script setup>
 import { defineProps, defineEmits, watch, onMounted, onUnmounted } from 'vue';
+import request from '../utils/request';
 
 const props = defineProps({
     modelValue: { type: String, default: '' },
@@ -48,16 +49,28 @@ const initEditor = () => {
             branding: false,
             menubar: false,
             height: 400,
-            images_upload_handler: (blobInfo, success) => {
-                const reader = new FileReader();
-                reader.onload = () => success(reader.result);
-                reader.readAsDataURL(blobInfo.blob());
+            images_upload_handler: async (blobInfo, success, failure) => {
+                try {
+                    const formData = new FormData();
+                    formData.append('image', blobInfo.blob(), blobInfo.filename());
+                    // 调用后端图片上传接口（与后端路由保持一致）
+                    const res = await request.post('/api/upload', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                    // 上传成功：使用后端返回的图片URL
+                    if (res.success) {
+                        success(res.url);
+                    } else {
+                        failure('图片上传失败：' + res.msg);
+                    }
+                } catch (err) {
+                    console.log('后端完整响应：', err.response?.data); // 打印响应，方便排查
+                    failure('图片上传失败：' + (err.response?.data?.msg || err.message || '后端返回格式异常'));
+                }
             },
             setup: (editor) => {
                 editor.setContent(props.modelValue);
-                editor.on('Change', () => {
-                    emit('update:modelValue', editor.getContent());
-                });
+                editor.on('Change', () => emit('update:modelValue', editor.getContent()));
             }
         });
     } else {
@@ -92,6 +105,8 @@ onMounted(() => {
         };
         document.body.appendChild(script);
     }
+
+
 });
 
 // 监听父组件内容变化

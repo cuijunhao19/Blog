@@ -49,18 +49,14 @@
                 作者：{{ blog.author }} |
                 发布时间：{{ formatDate(blog.publishTime) }}
             </div>
-            <div class="blog-content">
-                {{ blog.content.length > 100
-                    ? blog.content.slice(0, 100) + '...'
-                    : blog.content
-                }}
-            </div>
+            <p class="blog-summary">{{ getSummary(htmlToText(blog.content)) }}</p>
 
         </div>
     </div>
 </template>
 
 <script setup>
+import { htmlToText, getSummary } from '../utils/format'; // 导入工具函数
 import request from '../utils/request';
 import { useRouter, useRoute } from 'vue-router';
 import { ref, onMounted, computed } from 'vue';

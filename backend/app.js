@@ -7,6 +7,8 @@ const blogRoutes = require("./routes/blogRoutes"); // 导入博客路由
 // 新增：导入认证路由和权限中间件
 const authRoutes = require('./routes/authRoutes');
 const { verifyToken } = require('./utils/jwt');
+const uploadRoutes = require('./routes/uploadRoutes'); // 导入上传路由
+const path = require('path');
 
 // 1. 初始化 Express 实例（创建后端服务器）
 const app = express();
@@ -22,6 +24,11 @@ app.use(express.json()); // 解析 JSON 格式的请求体（前端提交数据�
 // 比如：blogRoutes 中的 GET / → 实际接口是 GET /api/blogs
 app.use("/api/blogs", blogRoutes);
 app.use('/api/auth', authRoutes);  // 挂载认证路由
+
+// 开放uploads目录为静态资源（允许前端直接访问图片）
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/upload', uploadRoutes); // 挂载上传路由
+
 
 // 5. 启动服务器（监听 .env 中定义的 PORT 端口）
 const PORT = process.env.PORT || 5000; // 没找到环境变量时默认用 5000

@@ -3,7 +3,7 @@ import axios from "axios";
 
 // 1. 创建 Axios 实例（配置基础路径、超时时间）
 const request = axios.create({
-  baseURL: "http://localhost:5000", // 后端服务的基础地址（必须和后端一致）
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000", // 后端服务的基础地址（必须和后端一致）
   timeout: 5000, // 请求超时时间（5秒没响应则报错）
   headers: {
     "Content-Type": "application/json", // 默认请求头（告诉后端，前端传的是 JSON 格式）
