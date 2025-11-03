@@ -1,23 +1,17 @@
-<!-- src/views/EditBlog.vue -->
 <template>
     <div class="create-blog-container">
-        <!-- 页面标题改为“编辑博客” -->
         <h1>编辑博客</h1>
 
-        <!-- 加载中状态（获取原博客数据时显示） -->
         <div class="loading" v-if="loadingData">
             加载中...
         </div>
 
-        <!-- 加载失败状态 -->
         <div class="error" v-else-if="loadError">
             ❌ {{ loadError }}
             <button class="back-btn" @click="$router.push('/')">返回列表页</button>
         </div>
 
-        <!-- 表单（复用创建页的结构，预填原数据） -->
         <form class="blog-form" @submit.prevent="handleSubmit" v-else>
-            <!-- 标题输入框（v-model 绑定原数据） -->
             <div class="form-group">
                 <label for="title">博客标题 <span class="required">*</span></label>
                 <input type="text" id="title" v-model.trim="form.title" placeholder="请输入博客标题（不超过100字）" maxlength="100"
@@ -25,21 +19,14 @@
                 <p class="error-tip" v-if="errors.title">{{ errors.title }}</p>
             </div>
 
-            <!-- 作者输入框
-            <div class="form-group">
-                <label for="author">作者</label>
-                <input type="text" id="author" v-model.trim="form.author" placeholder="请输入作者名（默认：匿名作者）" maxlength="20">
-            </div> -->
-
-            <!-- 内容输入框 -->
-            <!-- 富文本编辑器（加载已有内容） -->
+            <!-- 富文本编辑器 -->
             <div class="form-group">
                 <label>博客内容 <span style="color: var(--danger);">*</span></label>
-                <!-- 使用重构后的富文本组件，v-model双向绑定 -->
-                <RichTextEditor v-model="form.content" :disabled="loading" editorId="create-blog-editor" />
+                <!-- 添加 ref 和 key，确保内容更新时重新渲染 -->
+                <RichTextEditor ref="richTextEditorRef" v-model="form.content" :disabled="loading"
+                    editorId="edit-blog-editor" :key="editorKey" />
             </div>
 
-            <!-- 提交按钮组 -->
             <div class="form-btn">
                 <button type="submit" class="submit-btn" :disabled="submitting">
                     <span v-if="submitting">更新中...</span>
@@ -56,21 +43,23 @@
 <script setup>
 // 1. 导入工具
 import request from '../utils/request';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import RichTextEditor from '../components/RichTextEditor.vue';
 
 // 2. 获取路由参数和路由实例
 const route = useRoute();
 const router = useRouter();
-const blogId = route.params.id;  // 从 URL 中获取要编辑的博客 ID
+const blogId = route.params.id;
 
 // 3. 响应式数据
-const form = ref({ title: '', content: '' });  // 表单数据（预填原博客数据）
-const loadingData = ref(true);  // 加载原博客数据的状态
-const loadError = ref('');      // 加载原数据的错误信息
-const submitting = ref(false);  // 提交更新的状态
-const errors = ref({ title: '', content: '' });  // 表单验证错误
+const form = ref({ title: '', content: '' });
+const loadingData = ref(true);
+const loadError = ref('');
+const submitting = ref(false);
+const errors = ref({ title: '', content: '' });
+const richTextEditorRef = ref(null);  // 新增：富文本编辑器引用
+const editorKey = ref(0);  // 新增：用于强制重新渲染编辑器的 key
 
 // 4. 页面加载时，获取原博客数据并填充到表单
 const getBlogData = async () => {
@@ -82,13 +71,32 @@ const getBlogData = async () => {
         const response = await request.get(`/api/blogs/${blogId}`);
         const blog = response.data;
 
+        console.log('获取到的博客数据:', blog);  // 调试日志
+
         // 填充表单（预填原数据）
         form.value = {
             title: blog.title,
-            content: blog.content
+            content: blog.content || ''  // 确保 content 不为 undefined
         };
+
+        // 关键修复：等待下一个 tick 确保 DOM 更新完成
+        await nextTick();
+
+        // 强制重新渲染编辑器
+        editorKey.value++;
+
+        // 再次等待确保编辑器重新渲染完成
+        await nextTick();
+
+        // 如果有编辑器引用，手动设置内容
+        if (richTextEditorRef.value) {
+            await nextTick();
+            richTextEditorRef.value.setEditorContent(form.value.content);
+        }
+
     } catch (err) {
-        loadError.value = err;  // 加载失败（如博客不存在）
+        loadError.value = err;
+        console.error('加载博客数据失败:', err);
     } finally {
         loadingData.value = false;
     }
@@ -96,7 +104,6 @@ const getBlogData = async () => {
 
 // 5. 表单提交（更新博客）
 const handleSubmit = async () => {
-    // 前端表单验证（和创建页逻辑一致）
     let isValid = true;
     errors.value = { title: '', content: '' };
 
@@ -115,20 +122,17 @@ const handleSubmit = async () => {
 
     if (!isValid) return;
 
-    // 提交更新请求
     try {
         submitting.value = true;
 
-        // 调用 PUT /api/blogs/:id 接口，传递更新后的数据
+        // 调用 PUT /api/blogs/:id 接口
         await request.put(`/api/blogs/${blogId}`, {
             title: form.value.title,
-            author: form.value.author,
             content: form.value.content
         });
 
-        // 更新成功，跳转回详情页并提示
         alert('博客更新成功！');
-        router.push(`/blog/${blogId}`);  // 跳回当前博客的详情页
+        router.push(`/blog/${blogId}`);
     } catch (err) {
         alert('更新失败：' + err);
     } finally {
@@ -142,6 +146,7 @@ onMounted(() => {
 });
 </script>
 
+<!-- 样式保持不变 -->
 <style scoped>
 .create-blog-container {
     width: 100%;
