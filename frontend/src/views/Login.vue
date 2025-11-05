@@ -43,11 +43,12 @@ const handleLogin = async () => {
         loading.value = true;
         // 调用登录接口
         const response = await request.post('/api/auth/login', form.value);
-        const { token, username } = response.data;
+        const { token, username, userId } = response.data;
 
         // 存储 Token 和用户名到 localStorage（持久化，刷新页面不丢失）
         localStorage.setItem('blog_token', token);
         localStorage.setItem('blog_username', username);
+        localStorage.setItem('blog_userId', userId); // 新增：存储用户ID
 
         alert('登录成功，即将跳转到首页');
         router.push('/');  // 登录成功后跳首页

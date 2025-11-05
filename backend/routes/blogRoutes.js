@@ -226,5 +226,109 @@ router.delete("/:id", verifyToken, async (req, res) => {
   }
 });
 
+// 点赞博客
+router.post("/:id/like", verifyToken, async (req, res) => {
+  try {
+    const blogId = req.params.id;
+    const userId = req.userId;
+
+    const blog = await Blog.findById(blogId);
+    if (!blog) {
+      return res.status(404).json({ success: false, message: "博客不存在" });
+    }
+
+    // 检查用户是否已经点赞
+    const alreadyLiked = blog.likedBy.some((id) => id.toString() === userId);
+    if (alreadyLiked) {
+      // 如果已经点赞，直接返回当前状态，而不是错误
+      return res.status(200).json({
+        success: true,
+        message: "您已经点赞过此博客",
+        data: { likes: blog.likes, liked: true },
+      });
+    }
+
+    // 更新点赞信息
+    blog.likes += 1;
+    blog.likedBy.push(userId);
+    await blog.save();
+
+    res.status(200).json({
+      success: true,
+      message: "点赞成功",
+      data: { likes: blog.likes, liked: true },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "点赞失败：" + err.message,
+    });
+  }
+});
+
+// 取消点赞
+router.post("/:id/unlike", verifyToken, async (req, res) => {
+  try {
+    const blogId = req.params.id;
+    const userId = req.userId;
+
+    const blog = await Blog.findById(blogId);
+    if (!blog) {
+      return res.status(404).json({ success: false, message: "博客不存在" });
+    }
+
+    // 检查用户是否点赞过
+    const likeIndex = blog.likedBy.findIndex((id) => id.toString() === userId);
+    if (likeIndex === -1) {
+      // 如果没有点赞，直接返回当前状态，而不是错误
+      return res.status(200).json({
+        success: true,
+        message: "您还没有点赞此博客",
+        data: { likes: blog.likes, liked: false },
+      });
+    }
+
+    // 更新点赞信息
+    blog.likes = Math.max(0, blog.likes - 1); // 确保不会变成负数
+    blog.likedBy.splice(likeIndex, 1);
+    await blog.save();
+
+    res.status(200).json({
+      success: true,
+      message: "取消点赞成功",
+      data: { likes: blog.likes, liked: false },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "取消点赞失败：" + err.message,
+    });
+  }
+});
+
+// 获取用户对某博客的点赞状态（可选，用于页面初始化时显示状态）
+router.get("/:id/like-status", verifyToken, async (req, res) => {
+  try {
+    const blogId = req.params.id;
+    const userId = req.userId;
+
+    const blog = await Blog.findById(blogId);
+    if (!blog) {
+      return res.status(404).json({ success: false, message: "博客不存在" });
+    }
+
+    const liked = blog.likedBy.includes(userId);
+
+    res.status(200).json({
+      success: true,
+      data: { liked, likes: blog.likes },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "获取点赞状态失败：" + err.message,
+    });
+  }
+});
 // 导出路由实例，供入口文件挂载
 module.exports = router;

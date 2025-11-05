@@ -30,6 +30,10 @@ request.interceptors.request.use(
 // 3. 响应拦截器（收到后端响应后，统一处理错误）
 request.interceptors.response.use(
   (response) => {
+    // 如果响应数据有 success 字段且为 false，也视为错误
+    if (response.data && response.data.success === false) {
+      return Promise.reject(new Error(response.data.message || "请求失败"));
+    }
     // 后端返回的成功数据（只取 response.data，简化组件中获取数据的代码）
     return response.data;
   },

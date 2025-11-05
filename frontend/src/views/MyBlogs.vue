@@ -48,6 +48,7 @@
             <div class="blog-meta">
                 作者：{{ blog.author }} |
                 发布时间：{{ formatDate(blog.publishTime) }}
+                <span class="likes-count">❤️ {{ blog.likes || 0 }} 点赞</span>
             </div>
             <p class="blog-summary">{{ getSummary(htmlToText(blog.content)) }}</p>
 

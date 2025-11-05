@@ -89,6 +89,7 @@ router.post("/login", async (req, res) => {
       message: "登录成功",
       data: {
         username: user.username,
+        userId: user._id, // 新增：返回用户ID
         token,
       },
     });

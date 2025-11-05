@@ -21,6 +21,13 @@
             <div class="blog-meta">
                 <span>作者：{{ blog.author }}</span>
                 <span>发布时间：{{ formatDate(blog.publishTime) }}</span>
+                <span class="likes-count">
+                    <i class="like-icon" :class="{ liked: isLiked, loading: likeLoading }" @click="handleLike"
+                        :disabled="likeLoading">
+                        {{ likeLoading ? '⏳' : (isLiked ? '已点赞❤️' : '未点赞🤍') }}
+                    </i>
+                    {{ blog.likes || 0 }} 人点赞
+                </span>
                 <!-- 新增：编辑按钮 -->
                 <button class="btn btn-edit" @click="$router.push(`/edit-blog/${blog._id}`)">
                     编辑博客
@@ -71,7 +78,7 @@
 <script setup>
 // 导入工具
 import request from '../utils/request';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';  // route 用于获取参数，router 用于跳转
 
 // 获取路由参数和路由实例
@@ -85,6 +92,16 @@ const error = ref('');     // 错误信息
 const showDeleteConfirm = ref(false);  // 控制删除确认弹窗显示/隐藏
 const deleting = ref(false);           // 删除操作的加载状态
 const from = ref(route.query.from || 'list');  // 获取 from 参数，决定返回按钮跳转到哪里（列表页/我的博客页）默认值为 'list'
+const isLiked = ref(false); // 当前用户是否点赞
+const likeLoading = ref(false); // 点赞操作加载状态
+
+// 计算属性：判断当前用户是否是作者
+const isAuthor = computed(() => {
+    if (!blog.value) return false;
+    const currentUserId = localStorage.getItem('blog_userId');
+    return currentUserId && blog.value.authorId === currentUserId;
+});
+
 
 // 日期格式化函数（复用列表页的逻辑，后续可抽成工具函数）
 const formatDate = (isoDate) => {
@@ -107,12 +124,92 @@ const getBlogDetail = async () => {
 
         // 接口成功，赋值博客数据
         blog.value = response.data;
+        // 获取点赞状态（如果用户已登录）
+        await getLikeStatus();
     } catch (err) {
         // 接口失败，存储错误信息
         error.value = err;
     } finally {
         // 结束加载
         loading.value = false;
+    }
+};
+// 获取点赞状态 - 修复版本
+const getLikeStatus = async () => {
+    try {
+        const token = localStorage.getItem('blog_token');
+        if (!token) {
+            isLiked.value = false;
+            return;
+        }
+
+        const blogId = route.params.id;
+        const response = await request.get(`/api/blogs/${blogId}/like-status`);
+
+        if (response.success) {
+            isLiked.value = response.data.liked;
+            // 确保点赞数与后端同步
+            if (blog.value) {
+                blog.value.likes = response.data.likes;
+            }
+        }
+    } catch (err) {
+        console.log('获取点赞状态失败:', err.message);
+        // 如果获取状态失败，默认设为未点赞
+        isLiked.value = false;
+    }
+};
+
+
+// 处理点赞/取消点赞 - 修复版本
+const handleLike = async () => {
+    const token = localStorage.getItem('blog_token');
+    if (!token) {
+        alert('请先登录后再点赞');
+        router.push('/login');
+        return;
+    }
+
+    if (likeLoading.value) return;
+
+    try {
+        likeLoading.value = true;
+        const blogId = route.params.id;
+
+        // 先更新UI状态（乐观更新）
+        const wasLiked = isLiked.value;
+        const oldLikes = blog.value.likes || 0;
+
+        // 立即更新UI
+        isLiked.value = !wasLiked;
+        blog.value.likes = wasLiked ? oldLikes - 1 : oldLikes + 1;
+
+        if (wasLiked) {
+            // 取消点赞
+            await request.post(`/api/blogs/${blogId}/unlike`);
+        } else {
+            // 点赞
+            await request.post(`/api/blogs/${blogId}/like`);
+        }
+
+        // 请求成功后，重新获取准确的状态（确保数据一致）
+        await getLikeStatus();
+
+    } catch (err) {
+        // 请求失败，恢复之前的状态
+        isLiked.value = !isLiked.value;
+        blog.value.likes = isLiked.value ? (blog.value.likes || 0) + 1 : (blog.value.likes || 0) - 1;
+
+        // 显示更友好的错误信息
+        const errorMsg = err.response?.data?.message || err.message || '操作失败';
+        if (errorMsg.includes('已经点赞') || errorMsg.includes('还没有点赞')) {
+            // 这些错误通常是由于状态不同步导致的，重新同步状态
+            await getLikeStatus();
+        } else {
+            alert('操作失败: ' + errorMsg);
+        }
+    } finally {
+        likeLoading.value = false;
     }
 };
 

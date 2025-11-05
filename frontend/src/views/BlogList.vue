@@ -63,16 +63,11 @@
             <div class="blog-meta">
                 作者：{{ blog.author }} |
                 发布时间：{{ formatDate(blog.publishTime) }}
+                <span class="likes-count">❤️ {{ blog.likes || 0 }} 点赞</span>
             </div>
             <!-- 替换：用处理后的纯文本摘要 -->
             <p class="blog-summary">{{ getSummary(htmlToText(blog.content)) }}</p>
-            <!-- 博客内容（截取前100字，避免内容过长）
-            <div class="blog-content">
-                {{ blog.content.length > 100
-                    ? blog.content.slice(0, 100) + '...'
-                    : blog.content
-                }}
-            </div> -->
+            
         </div>
 
         <!-- 新增：分页组件（只有有数据时显示） -->

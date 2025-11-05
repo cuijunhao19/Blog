@@ -27,6 +27,17 @@ const blogSchema = new mongoose.Schema({
     type: Date, // 字段类型：日期（发布时间）
     default: Date.now, // 默认值：当前时间（创建博客时自动填充）
   },
+  // 新增点赞相关字段
+  likes: {
+    type: Number,
+    default: 0, // 点赞总数
+  },
+  likedBy: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User", // 记录点赞的用户ID，防止重复点赞
+    },
+  ],
 });
 
 // 2. 根据 Schema 创建“数据模型”（Model）：对应 MongoDB 中的 `blogs` 集合（表）
